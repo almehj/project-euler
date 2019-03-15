@@ -58,15 +58,15 @@ class path_grid_analyzer(object):
 
     def print_path(self,path):
 
-        max_width = (2*len(self.rows) - 1)*2
+        max_width = 3*len(self.rows) - 1  
         fmt_str = "{:^%ds}"%(max_width)        
         for pi,row in zip(path,self.rows):
             row_bits = []
             for i,n in enumerate(row):
                 if i == pi:
-                    row_bits.append("*%02d*"%(n))
+                    row_bits.append("*%02d"%(n))
                 else:
-                    row_bits.append(" %02d "%(n))
+                    row_bits.append(" %02d"%(n))
             print(fmt_str.format(''.join(row_bits)))
                     
         
