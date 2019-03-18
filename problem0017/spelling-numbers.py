@@ -70,17 +70,22 @@ def gen_name_len(n):
         answer += 3
         
     return answer
-    
-def main():
-    for n in [int(s) for s in sys.argv[1:]]:
-        print("%7d: %d"%(n,gen_name_len(n)))
 
 
+def compute_letter_total(n_max):
     total = 0
-    for n in range(1,1001):
+    for n in range(1,n_max+1):
         total += gen_name_len(n)
+        print("  %5d: %d (%d)"%(n,gen_name_len(n),total))
 
-    print("Total is",total)
+    return total
+
+def main():
+#    for n in [int(s) for s in sys.argv[1:]]:
+#        print("%7d: %d"%(n,gen_name_len(n)))
+
+    for n in [int(s) for s in sys.argv[1:]]:
+        print("Total of {1,...,%d} is %d"%(n,compute_letter_total(n)))
 
 if __name__ == "__main__":
     main()
