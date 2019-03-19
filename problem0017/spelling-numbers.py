@@ -3,8 +3,6 @@
 import sys
 import math
 
-
-
 name_lens = {}
 name_lens[0] = 0
 name_lens[1] = len('one')
@@ -53,28 +51,34 @@ def gen_name_len(n):
     if n < 100 and n in name_lens:
         return name_lens[n]
     
-    d_list = digits(n)
-    d_list.reverse()
+    thousands = int(n/1000)
+    hundreds = int((n%1000)/100)
+    tens = int((n%100)/10)
+    units = n%10
+
+    assert(n == (1000*thousands + 100*hundreds + 10*tens + units))
+    
     answer = 0
-
-    answer = name_lens[d_list[0]]
-    if len(d_list) > 1 and d_list[1] > 0:
-        answer += name_lens[d_list[1]*10]
-
-    for e,d in enumerate(d_list[2:]):
-        if d > 0:
-            answer += name_lens[d] + name_lens[10**(e+2)]
-
+    if thousands > 0:
+        answer += gen_name_len(thousands) + name_lens[1000]
+    if hundreds > 0:
+        answer += gen_name_len(hundreds) + name_lens[100]
+    if tens == 1:        
+        answer += gen_name_len(10+units)
+    else:
+        answer += gen_name_len(10*tens)+gen_name_len(units)
+        
+        
     # The "and"
-    if n > 99 and (d_list[0] + d_list[1]) > 0:
+    if n > 99 and (tens + units) > 0:
         answer += 3
         
     return answer
 
 
-def compute_letter_total(n_max):
+def compute_letter_total(n_max,n_min=1):
     total = 0
-    for n in range(1,n_max+1):
+    for n in range(n_min,n_max+1):
         total += gen_name_len(n)
         print("  %5d: %d (%d)"%(n,gen_name_len(n),total))
 
@@ -84,8 +88,11 @@ def main():
 #    for n in [int(s) for s in sys.argv[1:]]:
 #        print("%7d: %d"%(n,gen_name_len(n)))
 
-    for n in [int(s) for s in sys.argv[1:]]:
-        print("Total of {1,...,%d} is %d"%(n,compute_letter_total(n)))
+    n_max = int(sys.argv[1])
+    n_min = 1
+    if len(sys.argv[1:]) > 1:
+        n_min = int(sys.argv[2])
+    print("Total of {%d,...,%d} is %d"%(n_min,n_max,compute_letter_total(n_max,n_min)))
 
 if __name__ == "__main__":
     main()
