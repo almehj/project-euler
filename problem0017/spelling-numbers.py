@@ -80,7 +80,7 @@ def compute_letter_total(n_max,n_min=1):
     total = 0
     for n in range(n_min,n_max+1):
         total += gen_name_len(n)
-        print("  %5d: %d (%d)"%(n,gen_name_len(n),total))
+ #       print("  %5d: %d (%d)"%(n,gen_name_len(n),total))
 
     return total
 
