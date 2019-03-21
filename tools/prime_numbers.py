@@ -76,6 +76,15 @@ def is_prime(n):
 
     return is_prime_use_existing(n)
 
+
+def factorization(n):
+    answer = []
+
+    raise RuntimeError("not implemented yet")
+    
+    return answer
+
+
 def main():
     for n in [int(s.strip()) for s in sys.argv[1:]]:
         print("%4d: %s"%(n,is_prime(n)))
