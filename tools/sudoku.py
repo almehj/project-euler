@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
-
+import itertools
+import operator
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -190,12 +191,18 @@ class sudoku_puzzle(object):
         return '\n'.join(lines)
 
 
-    def set_value(self,i,j,n):
+    def set_value(self,i,j,n,**kwargs):
+
+        force = kwargs.get('force',False)
 
         if n not in self.possibles[(i,j)]:
+            logging.debug(" %d not in set of possibles for %d,%d, ignoring"%(n,i,j))
             return
 
-        logging.debug(" Setting %d,%d to %d"%(i,j,n))
+        if self.grid[i][j] != 0 and not force:
+            logging.debug(" %d,%d already set to %d, ignoring"%(i,j,grid[i][j]))
+            return
+        
         self.grid[i][j] = n
 
         # Update zero info
@@ -205,9 +212,11 @@ class sudoku_puzzle(object):
                 l.remove(n)
 
         # Update possibles
-        for base_ndx,ndx_set in [((i,0),_row_ndx_set),
-                                 ((0,j),_col_ndx_set),
-                                 (compute_box_grid_upper_left(box_i),_box_ndx_set)]:
+        for base_ndx,ndx_set in [
+                ((i,0),_row_ndx_set),
+                ((0,j),_col_ndx_set),
+                (compute_box_grid_upper_left(box_i),_box_ndx_set)
+        ]:
             i,j = base_ndx
             for di,dj in ndx_set:
                 ndx = (i+di,j+dj)
@@ -220,25 +229,114 @@ class sudoku_puzzle(object):
 
         n = 1
         while n > 0:
+            n = 0
+            n += self.do_unique_possible_analysis()
+            n += self.do_singleton_analysis()
+
+            
+
+    def do_singleton_analysis(self):
+
+        logging.debug(" Singleton analysis")
+        
+        n_replaced = 0
+
+        n = self.do_singleton_pass()
+        while n > 0:
+            logging.debug("  Pass replaced %d"%(n))
+            n_replaced += n
             n = self.do_singleton_pass()
 
-    def do_singleton_pass(self):
+        logging.debug(" Singleton analysis found %d new cell values"%(n_replaced))
+        return n_replaced
+            
+    
+    def do_singleton_pass(self):        
 
-        logging.debug(" Considering singleton possibles")
+        logging.debug("   Considering singleton possibles")
         
         singletons = [ndx for ndx in self.possibles if len(self.possibles[ndx]) == 1]
-        logging.debug("  %d cells with singleton possible list"%(len(singletons)))
+        logging.debug("    %d cells with singleton possible list"%(len(singletons)))
         if len(singletons) > 0:
-            logging.debug("  Singleton cells: %s"%(" ".join([str(ndx) for ndx in singletons])))
+            logging.debug("    Singleton cells: %s"%
+                          (" ".join([str(ndx) for ndx in singletons])))
             for ndx in singletons:
                 i,j = ndx
                 n = self.possibles[ndx][0]
-                logging.debug("   Setting %d,%d to %d"%(i,j,n))
+                logging.debug("     Setting %d,%d to %d"%(i,j,n))
                 self.set_value(i,j,self.possibles[ndx][0])
 
-            logging.debug("   Set %d values"%(len(singletons)))
-
+            logging.debug("     Set %d values"%(len(singletons)))
+            
+        # Tell caller how many, if any, cells we updated        
         return len(singletons)
-        
-        
+
+
+    def do_unique_possible_analysis(self):
+
+        logging.debug(" Unique possible analysis")
+
+        n_replaced = 0
+
+        n = self.do_unique_possible_pass()
+        while n > 0:
+            logging.debug("  Pass replaced %d"%(n))
+            n_replaced += n
+            n = self.do_unique_possible_pass()
+
+        logging.debug(" Unique possible analysis found %d new cell values"%(n_replaced))
+        return n_replaced
     
+    def do_unique_possible_pass(self):
+
+        logging.debug("   Considering possibles unique to a cell in a row|column|box")
+        
+        n_replaced = 0
+        for n in range(_ROW_LEN):
+            for base_ndx,ndx_set in [
+                    ((n,0),_row_ndx_set),
+                    ((0,n),_col_ndx_set),
+                    (compute_box_grid_upper_left(n),_box_ndx_set)
+            ]:
+                n_replaced += self.do_area_unique_possible_area_pass(base_ndx,ndx_set)
+
+        return n_replaced
+    
+    def do_area_unique_possible_area_pass(self,base_ndx,ndx_set):
+        n_replaced = 0
+        cells_with_possible = {}
+        for ndx in ndx_set:
+            i,j = tuple(map(operator.add,base_ndx,ndx))
+            if self.grid[i][j] != 0:                
+                for n in self.possibles[(i,j)]:
+                    if n not in cells_with_possible:
+                        cells_with_possible[n] = []
+                    cells_with_possible[n] += [(i,j)]
+
+            for n in cells_with_possible:
+                if len(cells_with_possible[n]) == 1:
+                    i,j = cells_with_possible[n][0]
+                    self.set_value(i,j,n)
+                    n_replaced += 1
+
+        return n_replaced
+        
+    def do_cluster_analysis(self):
+        
+        logging.debug(" Considering clusters in possibles")
+
+        # Return some indication we did something, or 0 if not
+        return 0
+        
+    def do_area_cluster_analysis(self,base_ndx,ndx_set):
+        pass
+
+    def count_zeros(self):
+        self.zeros_left = 0
+        for i,j in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
+            if self.grid[i][j] == 0:
+                self.zeros_left += 1
+
+    def is_solved(self):
+        self.count_zeros()
+        return self.zeros_left == 0

@@ -36,11 +36,16 @@ def main():
             print("%s"%(grid))
 
             grid.solve()
-            
-            print("Solution")
-#            grid.report_zeros()
-#            grid.report_possibles()
+
+            if grid.is_solved():
+                print("%3d: Solved. Solution:"%(index))
+            else:
+                print("%3d: Not Solved. End State:"%(index))
             print("%s"%(grid))
+
+            if not grid.is_solved():
+                print("%3d: Possible lists when no more progress could be made:"%(index))
+                grid.report_possibles()
             print("\n")
 
 if __name__ == "__main__":
