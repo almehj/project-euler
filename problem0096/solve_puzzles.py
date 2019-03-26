@@ -8,7 +8,8 @@ import sudoku
 def parse_grid(lines):
     index = int(lines[0].split()[1])
     grid = sudoku.sudoku_puzzle(lines[1:])
-
+    grid.name = "Puzzle %d"%(index)
+    
     return index,grid
         
 def read_puzzles(infile):
@@ -35,7 +36,7 @@ def main():
 
             print("Puzzle %d"%(index))
             print("%s"%(grid))
-
+            
             grid.solve()
 
             if grid.is_solved():

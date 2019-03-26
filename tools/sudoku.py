@@ -103,6 +103,7 @@ class sudoku_puzzle(object):
         self.zeros_setup = False
         self.possibles = {}
         self.done = []
+        self.name = "No name"
         
     def parse_lines(self,lines):
         assert(len(lines) == _ROW_LEN)
@@ -259,7 +260,7 @@ class sudoku_puzzle(object):
 
     def solve(self):
 
-        logging.debug("Considering Solution of grid")
+        logging.debug("Considering Solution of Puzzle %s"%(self.name))
 
         n = 0
         last_n = 1
@@ -270,7 +271,10 @@ class sudoku_puzzle(object):
 #            n += self.do_singleton_analysis()
             n += self.do_cluster_analysis()
 
-            
+        if self.is_solved():
+            logging.debug("Solved %s"%self.name)
+        else:
+            logging.debug("Did not solve %s"%self.name)
 
     def do_singleton_analysis(self):
 
