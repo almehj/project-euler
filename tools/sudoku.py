@@ -4,6 +4,8 @@ import logging
 import itertools
 import operator
 
+import combinatorics
+
 logging.basicConfig(level=logging.DEBUG)
 
 # Hard Wired for 9x9 puzzles. 
@@ -22,6 +24,39 @@ for i in range(_ROW_LEN):
     _col_ndx_set += [(i,0)]
     _box_ndx_set += [(i//_BOX_DIM,i%_BOX_DIM)]
 
+class area_iterator:
+
+    def __init__(self,base_ndx,ndx_set):
+        self.next_i = 0
+        self.ndx_set = []
+        for ndx in ndx_set:
+            curr_ndx = tuple(map(operator.add,base_ndx,ndx))
+            self.ndx_set += [curr_ndx]
+        
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.next_i == len(self.ndx_set):
+            raise StopIteration
+
+        self.next_i += 1
+        return self.ndx_set[self.next_i-1]
+
+def get_row_iterator(base_ndx):
+    i,j = base_ndx
+    return area_iterator((i,0),_row_ndx_set)
+
+def get_col_iterator(base_ndx):
+    i,j = base_ndx
+    return area_iterator((0,j),_col_ndx_set)
+
+def get_box_iterator(base_ndx):
+    i,j = base_ndx
+    i = _BOX_DIM*(i//_BOX_DIM)
+    j = _BOX_DIM*(j//_BOX_DIM)
+    return area_iterator((i,j),_box_ndx_set)
+    
 def invert_known_vector(v):
     answer = []
     for n in range(1,_ROW_LEN+1):
@@ -103,23 +138,19 @@ class sudoku_puzzle(object):
 
         for i in range(_ROW_LEN):
             logging.debug("   Computing zeros for row %d"%(i))
-            self.row_zeros[i] = self.find_area_zeros((i,0),_row_ndx_set)
+            self.row_zeros[i] = self.find_area_zeros(get_row_iterator((i,0)))
             logging.debug("   Computing zeros for column %d"%(i))
-            self.col_zeros[i] = self.find_area_zeros((0,i),_col_ndx_set)
+            self.col_zeros[i] = self.find_area_zeros(get_col_iterator((0,i)))
             box_i,box_j = compute_box_grid_upper_left(i)
-            logging.debug("   Computing zeros for box %d (starts at %d,%d)"%
-                          (i,box_i,box_j))
-            self.box_zeros[i] = self.find_area_zeros((box_i,box_j),_box_ndx_set)
+            logging.debug("   Computing zeros for box starting at %d,%d)"%
+                          (box_i,box_j))
+            self.box_zeros[i] = self.find_area_zeros(get_box_iterator((box_i,box_j)))
 
 
-    def find_area_zeros(self,start_ndx,area_ndx_set):
+    def find_area_zeros(self,area_iter):
 
         non_zeros = []
-        start_i,start_j = start_ndx
-        for di,dj in area_ndx_set:
-            i = start_i + di
-            j = start_j + dj
-
+        for i,j in area_iter:
             if self.grid[i][j] != 0:
                 non_zeros += [self.grid[i][j]]
 
@@ -198,19 +229,19 @@ class sudoku_puzzle(object):
         return '\n'.join(lines)
 
 
-    def set_value(self,i,j,n,**kwargs):
+    def set_value(self,ndx,n,**kwargs):
 
-        force = kwargs.get('force',False)
+        if n not in self.possibles[ndx]:
+            logging.severe(" %d not in set of possibles for %d,%d, ignoring"%(n,i,j))
+            raise RuntimeError("Attempt to set impossible value in cell")
 
-        if n not in self.possibles[(i,j)]:
-            logging.debug(" %d not in set of possibles for %d,%d, ignoring"%(n,i,j))
-            return
+        i,j = ndx
 
-        if self.grid[i][j] != 0 and not force:
-            logging.debug(" %d,%d already set to %d, ignoring"%(i,j,grid[i][j]))
-            return
-        
-        self.grid[i][j] = n
+        if self.grid[i][j] != 0:
+            logging.severe(" %d,%d already set to %d"%(i,j,self.grid[i][j]))
+            raise RuntimeError("Attempt to set already-set cell")
+        else:
+            self.grid[i][j] = n
 
         # Update zero info
         box_i = compute_box_ndx(i,j)
@@ -219,26 +250,25 @@ class sudoku_puzzle(object):
                 l.remove(n)
 
         # Update possibles
-        for base_ndx,ndx_set in [
-                ((i,0),_row_ndx_set),
-                ((0,j),_col_ndx_set),
-                (compute_box_grid_upper_left(box_i),_box_ndx_set)
-        ]:
-            i,j = base_ndx
-            for di,dj in ndx_set:
-                ndx = (i+di,j+dj)
+        self.possibles[ndx] = []
+        for area_iter_gen in [get_row_iterator,get_col_iterator,get_box_iterator]:
+            area_iter = area_iter_gen((i,j))
+            for ndx in area_iter:
                 if n in self.possibles[ndx]:
-                    self.possibles[ndx].remove(n)
+                    self.possibles[ndx].remove(n)                    
 
     def solve(self):
 
         logging.debug("Considering Solution of grid")
 
-        n = 1
-        while n > 0:
+        n = 0
+        last_n = 1
+        while n+last_n > 0:
+            last_n = n
             n = 0
             n += self.do_unique_possible_analysis()
             n += self.do_singleton_analysis()
+            n += self.do_cluster_analysis()
 
             
 
@@ -271,7 +301,8 @@ class sudoku_puzzle(object):
                 i,j = ndx
                 n = self.possibles[ndx][0]
                 logging.debug("     Setting %d,%d to %d"%(i,j,n))
-                self.set_value(i,j,self.possibles[ndx][0])
+
+                self.set_value(ndx,self.possibles[ndx][0])
 
             logging.debug("     Set %d values"%(len(singletons)))
             
@@ -300,31 +331,30 @@ class sudoku_puzzle(object):
         
         n_replaced = 0
         for n in range(_ROW_LEN):
-            for base_ndx,ndx_set in [
-                    ((n,0),_row_ndx_set),
-                    ((0,n),_col_ndx_set),
-                    (compute_box_grid_upper_left(n),_box_ndx_set)
+            for area_iter in [
+                    get_row_iterator((n,0)),
+                    get_col_iterator((0,n)),
+                    get_box_iterator(compute_box_grid_upper_left(n))
             ]:
-                n_replaced += self.do_area_unique_possible_area_pass(base_ndx,ndx_set)
+                n_replaced += self.do_area_unique_possible_area_pass(area_iter)
 
         return n_replaced
     
-    def do_area_unique_possible_area_pass(self,base_ndx,ndx_set):
+    def do_area_unique_possible_area_pass(self,area_iter):
         n_replaced = 0
         cells_with_possible = {}
-        for ndx in ndx_set:
-            i,j = tuple(map(operator.add,base_ndx,ndx))
-            if self.grid[i][j] != 0:                
-                for n in self.possibles[(i,j)]:
+        for ndx in area_iter:
+            i,j = ndx
+            if self.grid[i][j] == 0:                
+                for n in self.possibles[ndx]:
                     if n not in cells_with_possible:
                         cells_with_possible[n] = []
-                    cells_with_possible[n] += [(i,j)]
+                    cells_with_possible[n] += [ndx]
 
-            for n in cells_with_possible:
-                if len(cells_with_possible[n]) == 1:
-                    i,j = cells_with_possible[n][0]
-                    self.set_value(i,j,n)
-                    n_replaced += 1
+        for n in cells_with_possible:
+            if len(cells_with_possible[n]) == 1:
+                self.set_value(cells_with_possible[n][0],n)
+                n_replaced += 1
 
         return n_replaced
         
@@ -332,18 +362,66 @@ class sudoku_puzzle(object):
         
         logging.debug(" Considering clusters in possibles")
 
+        n_replaced = 0
+
+        n = self.do_cluster_analysis_pass()
+        while n > 0:
+            n_replaced += n
+            n = self.do_cluster_analysis_pass()
+            
         # Return some indication we did something, or 0 if not
-        return 0
+        logging.debug(" Cluster analysis found %d possibles to kill"%(n_replaced))
+        return n_replaced
+
+    def do_cluster_analysis_pass(self):
+
+        logging.debug("   Considering clusters")
         
-    def do_area_cluster_analysis(self,base_ndx,ndx_set,order):
-        possible_set = {}
+        n_replaced = 0
+        for n in range(_ROW_LEN):
+            for area_iter in [
+                    get_row_iterator((n,0)),
+                    get_col_iterator((0,n)),
+                    get_box_iterator(compute_box_grid_upper_left(n))
+            ]:
+                for order in [2,3,4]:
+                    n_replaced += self.do_area_cluster_analysis(area_iter,order)
 
-        for ndx in ndx_set:
-            curr_ndx = tuple(map(operator.add,base_ndx,ndx))
-            i,j = curr_ndx
-            if self.grid[i][j] != 0 and len(self.possibles[curr_ndx]) <= order:                
-                possible_set[curr_ndx] = self.possibles[curr_ndx]
+        return n_replaced
+        
+    def do_area_cluster_analysis(self,area_iter,order):
 
+        logging.debug("     Seeking clusters of size %d"%(order))
+
+        n_replaced = 0
+        possible_ndx_set = []
+        ndx_set = []
+        
+        for ndx in area_iter:
+            ndx_set += [ndx]
+            i,j = ndx
+            if self.grid[i][j] == 0 and len(self.possibles[ndx]) <= order:                
+                possible_ndx_set += [ndx]
+
+        if len(possible_ndx_set) >= order:
+            C = combinatorics.combinator(possible_ndx_set,order)
+            for curr_set in C:
+                possible_union = union([self.possibles[i] for i in curr_set])
+                if len(possible_union) == order:
+                    logging.debug("       A possible cluster %s"%(str(possible_union))) 
+                    # noone else can use these possibles
+                    for ndx in ndx_set:
+                        if ndx not in curr_set: 
+                            for n in possible_union:
+                                if n in self.possibles[ndx]:
+                                    logging.debug("        Removing possible %d from %d,%d"%
+                                                  (n,ndx[0],ndx[1]))
+                                    self.possibles[ndx].remove(n)
+                                    n_replaced += 1
+
+                        
+        return n_replaced
+        
     def count_zeros(self):
         self.zeros_left = 0
         for i,j in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
@@ -353,3 +431,20 @@ class sudoku_puzzle(object):
     def is_solved(self):
         self.count_zeros()
         return self.zeros_left == 0
+
+def main():
+    i = int(sys.argv[1])
+    j = int(sys.argv[2])
+
+    for name,func in [
+            ('Row',get_row_iterator),
+            ('Col',get_col_iterator),
+            ('Box',get_box_iterator)
+    ]:
+        ndx_iter = func((i,j))
+        print("%s: %s"%(name," ".join([str(i) for i in ndx_iter])))
+    
+if __name__ == "__main__":
+    import sys
+    main()
+    

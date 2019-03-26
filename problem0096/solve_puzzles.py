@@ -29,6 +29,7 @@ def main():
     with open(sys.argv[1]) as infile:
         puzzles = read_puzzles(infile)
 
+        n_solved = 0
         for index in puzzles:
             grid = puzzles[index]
 
@@ -39,6 +40,7 @@ def main():
 
             if grid.is_solved():
                 print("%3d: Solved. Solution:"%(index))
+                n_solved += 1
             else:
                 print("%3d: Not Solved. End State:"%(index))
             print("%s"%(grid))
@@ -47,6 +49,7 @@ def main():
                 print("%3d: Possible lists when no more progress could be made:"%(index))
                 grid.report_possibles()
             print("\n")
-
+        print("\nSolved %d of %d"%(n_solved,len(puzzles)))
+        
 if __name__ == "__main__":
     main()
