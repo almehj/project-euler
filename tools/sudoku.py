@@ -94,6 +94,18 @@ class sudoku_puzzle(object):
         self.update_zeros()
         self.compute_all_possibles()
 
+    def __str__(self):
+        lines = [_cross_line]
+        for i in range(_BOX_DIM):
+            for j in range(_BOX_DIM):
+                line_i = 3*i + j
+                lines.append(_line_format%tuple(self.grid[line_i]))
+            lines.append(_cross_line)
+        return '\n'.join(lines)
+
+    def as_lines(self):
+        return ["".join([str(i) for i in row]) for row in self.grid]
+        
     def clear(self):
         self.grid = []
         self.grid_setup = False
@@ -220,16 +232,6 @@ class sudoku_puzzle(object):
                 else:
                     print("%d,%d: DETERMINED %d"%(i,j,self.grid[i][j]))
     
-    def __str__(self):
-        lines = [_cross_line]
-        for i in range(_BOX_DIM):
-            for j in range(_BOX_DIM):
-                line_i = 3*i + j
-                lines.append(_line_format%tuple(self.grid[line_i]))
-            lines.append(_cross_line)
-        return '\n'.join(lines)
-
-
     def set_value(self,ndx,n,**kwargs):
 
         if n not in self.possibles[ndx]:
@@ -258,23 +260,79 @@ class sudoku_puzzle(object):
                 if n in self.possibles[ndx]:
                     self.possibles[ndx].remove(n)                    
 
+    def get_value(self,ndx):
+        i,j = ndx
+        return self.grid[i][j]
+
+    def count_zeros(self):
+        self.zeros_left = 0
+        for i,j in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
+            if self.grid[i][j] == 0:
+                self.zeros_left += 1
+
+    def is_solved(self):
+        self.count_zeros()
+        return self.zeros_left == 0
+
+
+    def is_possible(self):
+        return len(self.get_cells_by_n_possible(0)) == 0
+    
+    def get_cells_by_n_possible(self,n):
+        answer = []
+        for ndx in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
+            if self.grid[ndx[0]][ndx[1]] != 0:
+                continue
+            if len(self.possibles[ndx]) == n:
+                answer += [ndx]
+        return answer
+
+    def get_unset_cells(self):
+        answer = []
+        for ndx in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
+            if self.get_value(ndx) == 0:
+                answer += [ndx]
+        return answer
+
+
+
+
+
+
+
+    
     def solve(self):
 
         logging.debug("Considering Solution of Puzzle %s"%(self.name))
+        self.try_logic_solution()
 
+        if self.is_solved():
+            logging.debug(" Pure logic solved %s"%self.name)
+            return
+        else:
+            logging.debug(" Pure logic did not solve %s"%self.name)
+
+        self.try_speculative_solution()
+        if self.is_solved():
+            logging.debug(" Guess and check solved %s"%self.name)
+            return
+        else:
+            logging.debug(" Guess and check did not solve %s"%self.name)
+            logging.debug(" I give up")
+        
+    def try_logic_solution(self):
+        logging.debug(" Applying pure logical solition methods")
         n = 0
         last_n = 1
         while n+last_n > 0:
             last_n = n
             n = 0
             n += self.do_unique_possible_analysis()
-#            n += self.do_singleton_analysis()
+            n += self.do_singleton_analysis()
             n += self.do_cluster_analysis()
+            n += len(self.get_cells_by_n_possible(1))
 
-        if self.is_solved():
-            logging.debug("Solved %s"%self.name)
-        else:
-            logging.debug("Did not solve %s"%self.name)
+        return
 
     def do_singleton_analysis(self):
 
@@ -424,16 +482,62 @@ class sudoku_puzzle(object):
                         
         return n_replaced
         
-    def count_zeros(self):
-        self.zeros_left = 0
-        for i,j in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
-            if self.grid[i][j] == 0:
-                self.zeros_left += 1
 
-    def is_solved(self):
-        self.count_zeros()
-        return self.zeros_left == 0
+    def try_speculative_solution(self):
+        logging.debug(" Applying speculative solution techniques (guess and check)")
 
+        S = speculator(self)
+        S.solve()
+        
+        return    
+
+
+
+class spec_node(object):
+
+    def __init__(self,base_grid):
+        self.grid = sudoku_puzzle(base_grid.as_lines())
+        self.spec_ndxs = base_grid.get_unset_cells()
+        self.child_base = {}
+
+    def speculate(self,ndx,n):
+        # Possible to speculate on this node at all?
+        if ndx not in self.spec_ndxs():
+            logging.debug(" Attempt to speculate on non-speculatable cell, ignoring.")
+            return
+
+        # Is n a legal value?
+        if n not in self.grid.possibles[ndx]:
+            logging.debug(" Value %d not allowed for cell %d,%d"%(n,ndx[0],ndx[1]))
+            return
+
+        # Have we already done this?
+        if ndx not in self.child_base:
+            self.child_base[ndx] = {}
+        if n in self.child_base[ndx]:
+            logging.debug(" Already speculated on value of %d in cell %d,%d"%(n,ndx[0],ndx[1]))
+            return
+        
+        # So there is really something to do...
+        logging.debug(" Speculating: what if %d,%d was set to %d?"%(ndx[0],ndx[1],n))
+        new_node = spec_node(self.grid)
+        new_node.grid.set_value(ndx,n)
+        new_node.grid.solve()
+        self.child_base[ndx][n] = new_node
+
+    def has_solution(self):
+        return self.grid.is_solved()
+    
+class speculator(object):
+
+    def __init__(self,base_grid):
+        self.base_grid = base_grid
+        self.spec_tree = spec_node(base_grid)
+        
+    def solve(self):
+        logging.debug("No here yet!")
+    
+    
 def main():
     i = int(sys.argv[1])
     j = int(sys.argv[2])

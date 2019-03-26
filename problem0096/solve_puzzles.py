@@ -45,10 +45,26 @@ def main():
             else:
                 print("%3d: Not Solved. End State:"%(index))
             print("%s"%(grid))
-
+                
             if not grid.is_solved():
-                print("%3d: Possible lists when no more progress could be made:"%(index))
-                grid.report_possibles()
+                if grid.is_possible():
+                    print(" Solution still possible")
+                else:
+                    print(" Solution not possible")
+                print("\nPossible distribution:")
+                for n in range(10):
+                    poss_list = grid.get_cells_by_n_possible(n)
+                    print("%d: %d"%(n,len(poss_list)))
+                    if len(poss_list) <= 400:
+                        for ndx in poss_list:
+                            poss_str = " ".join([str(i) for i in grid.possibles[ndx]])
+                            print("   %d,%d: %s"%(ndx[0],ndx[1],poss_str))
+                        
+
+#                print("%3d: Possible lists when no more progress could be made:"%(index))
+#                grid.report_possibles()
+
+                
             print("\n")
         print("\nSolved %d of %d"%(n_solved,len(puzzles)))
         
