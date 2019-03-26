@@ -267,7 +267,7 @@ class sudoku_puzzle(object):
             last_n = n
             n = 0
             n += self.do_unique_possible_analysis()
-            n += self.do_singleton_analysis()
+#            n += self.do_singleton_analysis()
             n += self.do_cluster_analysis()
 
             
@@ -318,7 +318,7 @@ class sudoku_puzzle(object):
 
         n = self.do_unique_possible_pass()
         while n > 0:
-            logging.debug("  Pass replaced %d"%(n))
+            logging.debug("    Pass replaced %d"%(n))
             n_replaced += n
             n = self.do_unique_possible_pass()
 
@@ -390,8 +390,6 @@ class sudoku_puzzle(object):
         return n_replaced
         
     def do_area_cluster_analysis(self,area_iter,order):
-
-        logging.debug("     Seeking clusters of size %d"%(order))
 
         n_replaced = 0
         possible_ndx_set = []
