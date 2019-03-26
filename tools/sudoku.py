@@ -42,7 +42,14 @@ def compute_box_grid_upper_left(n):
     i,j = compute_box_coords(n)
     return _BOX_DIM*i,_BOX_DIM*j
 
-
+def union(ll):
+    answer = []
+    for l in ll:
+        for i in l:
+            if i not in answer:
+                answer.append(i)
+    return answer
+        
 
 class sudoku_puzzle(object):
 
@@ -328,8 +335,14 @@ class sudoku_puzzle(object):
         # Return some indication we did something, or 0 if not
         return 0
         
-    def do_area_cluster_analysis(self,base_ndx,ndx_set):
-        pass
+    def do_area_cluster_analysis(self,base_ndx,ndx_set,order):
+        possible_set = {}
+
+        for ndx in ndx_set:
+            curr_ndx = tuple(map(operator.add,base_ndx,ndx))
+            i,j = curr_ndx
+            if self.grid[i][j] != 0 and len(self.possibles[curr_ndx]) <= order:                
+                possible_set[curr_ndx] = self.possibles[curr_ndx]
 
     def count_zeros(self):
         self.zeros_left = 0
