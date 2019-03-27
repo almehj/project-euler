@@ -102,14 +102,8 @@ def look_for_match(words,numbers):
 
     for key in xforms:
         if len(xforms[key]) > 1:
-            print(xforms[key])
+            print(" and ".join(["%s -> %s"%t for t in xforms[key]]))
         
-    
-    return []
-
-
-
-
     
 def main():
 
@@ -126,14 +120,9 @@ def main():
             possibles += [key]
             
     possibles.sort(key=len,reverse=True)
-    print(possibles)
 
     for key in possibles:
-        match = look_for_match(word_set[key],number_set[key])
-        if match != []:
-            print(match)
-            
-
+        look_for_match(word_set[key],number_set[key])
             
 if __name__ == "__main__":
     main()
