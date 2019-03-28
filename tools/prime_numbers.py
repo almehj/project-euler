@@ -3,6 +3,7 @@
 import sys
 import math
 import logging
+import functools
 
 import euler_config
 
@@ -22,6 +23,11 @@ def read_existing_primes():
 
 existing_primes = read_existing_primes()
 
+
+
+def compute_max_factor(n):
+    return int(math.sqrt(n))+1
+
 def dump_existing_primes():
     prime_filename = "%s/existing_primes.txt"%(euler_config.data_path)
     logging.debug("Dumping list of first %d primes to %s"%
@@ -33,7 +39,7 @@ def dump_existing_primes():
 def is_prime_brute_force(n):
 
     #logging.debug("Brute forcing %d"%(n))
-    max_factor = int(math.sqrt(n))+1
+    max_factor = compute_max_factor(n)
     #logging.debug("Max factor is %d"%(max_factor))
     if n%2 == 0: return False
     
@@ -68,7 +74,7 @@ def is_prime_use_existing(n):
     logging.debug("Checking primality of %s using existing list of first %d primes"%
                  (n,len(existing_primes)))
     
-    max_factor = int(math.sqrt(n))+1
+    max_factor = compute_max_factor(n)
     logging.debug("Max factor is %d"%(max_factor))
 
     if n in existing_primes:
@@ -110,22 +116,57 @@ def is_prime(n):
 def factorization(n):
     answer = []
 
-    raise RuntimeError("not implemented yet")
+    max_factor = compute_max_factor(n)
+    extend_primes(max_factor)
     
+    for f in existing_primes:
+        f_n = 0
+        while n > 1 and n%f == 0:
+            f_n += 1
+            n = n//f
+        if f_n > 0:
+            answer += [(f,f_n)]
+        if n <= 1:
+            break
+        
     return answer
 
+def gen_divisor_list(factors):
+    prime_factors = [t[0] for t in factors]
+    prime_exponents = [t[1] for t in factors]
+    exps = [0]*len(prime_factors)
+
+    answer = []
+    n_combos = functools.reduce(lambda x, y: x*y, [i+1 for i in prime_exponents])
+    n = 0
+    while n < n_combos:
+        answer.append(
+            functools.reduce(
+                lambda x, y: x*y,
+                [x**e for x,e in zip(prime_factors,exps)]
+            )
+        )
+        for i in range(len(exps)):
+            exps[i] += 1
+            if exps[i] <= prime_exponents[i]:
+                break
+            exps[i] = 0
+        n += 1
+            
+    answer.sort()
+    return answer
+
+def divisors(n):
+    factors = factorization(n)
+    return gen_divisor_list(factors)
 
 def main():
 
     logging.basicConfig(level=logging.DEBUG)
 
-    results = ["COMPOSITE","PRIME"]
     for n in [int(s.strip()) for s in sys.argv[1:]]:
-        result = 0
-        if is_prime(n):
-            result = 1 
-        print("%4d: %s"%(n,results[result]))
-    dump_existing_primes()
-    
+        f_list = factorization(n)
+        print("%d: %s"%(n," * ".join(["%s^%s"%t for t in f_list])))
+        print("%d: %s"%(n," ".join([str(d) for d in divisors(n)])))
 if __name__ == "__main__":
     main()
