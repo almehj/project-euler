@@ -102,6 +102,9 @@ def is_prime_use_existing(n):
         if f >= max_factor:
             logging.debug("Test factor %d >= max_factor %d: %d PRIME"%(f,max_factor,n))
             return True
+
+
+
         
 def is_prime(n):
     if n < 0:
@@ -159,6 +162,16 @@ def gen_divisor_list(factors):
 def divisors(n):
     factors = factorization(n)
     return gen_divisor_list(factors)
+
+
+def primes_less_than(n):
+    n = abs(n)
+
+    answer = []
+    for p in existing_primes:
+        if p < n:
+            answer += [p]
+    return answer
 
 def main():
 
