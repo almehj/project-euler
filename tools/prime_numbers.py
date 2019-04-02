@@ -113,6 +113,10 @@ def is_prime(n):
     if n in [0,1]:
         return False
 
+    
+    if n < existing_primes[-1]:
+        return (n in existing_primes)
+            
     return is_prime_use_existing(n)
 
 
