@@ -2,7 +2,7 @@
 
 import sys
 
-from digit_set_brute import compute_sets
+from digit_set import set_generator
 from utils import seq_string
 
 def value(l,n):
@@ -17,18 +17,20 @@ def value_tuple(n):
 def main():
     max_len = int(sys.argv[1])
     exponent = int(sys.argv[2])
-    
+
+    s = set_generator(max_len)
+
     total = 0
-    digit_sets = compute_sets(max_len)
-    for digit_set in digit_sets:
-        v = value(digit_set,exponent)
+    for t in s:
+        combo = tuple(sorted([i for i in t if i != 0]))
+        v = value(combo,exponent)
         if v < 2:
             continue
         vt = value_tuple(v)
-        if tuple(digit_set) == vt:
+        if vt == combo:
             total += v
-            print("%d (%s) from %s"%(v,seq_string(vt),seq_string(digit_set)))
-
+            print("%d (%s) from %s"%(v,seq_string(vt),seq_string(combo)))
+            
     print("Total of all is %d"%(total))
 if __name__ == "__main__":
     main()

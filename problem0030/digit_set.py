@@ -6,10 +6,13 @@ import utils
 
 class set_generator:
 
-    def __init__(self,n):
-        self.digits = [0]*n
-        self.digits[0] = 1
-        self.curr_len = 1
+    def __init__(self,set_size,**kwargs):
+        self.items = kwargs.get('items',[i for i in range(10)])[:]
+        self.n_items = len(self.items)        
+
+        self.ndxs = [0]*set_size
+        self.n_ndxs = set_size
+
         self.done = False
         
     def __iter__(self):
@@ -19,51 +22,37 @@ class set_generator:
         if self.done:
             raise StopIteration
 
-        answer = self.digits[:self.curr_len][:]
+        answer = [self.items[i] for i in self.ndxs]
 
-        end_ndx = self.curr_len - 1
-        self.digits[end_ndx] += 1
-
-        i = end_ndx
-        while i >= 0 and self.digits[i] == 9:
-            i -= 1
-
-        if i > 0:
-            self.digits[i] = self.digits[i-1]+1
-            for j in range(i+1,self.curr_len):
-                self[j] = self[j-1]
-        elif i == 0:
-            self.curr_len += 1
-            for j in range(self.curr_len):
-                self.digits[j] = 1
+        # Try to advance to next set (or declare victory)
+        i = 0
+        while i < self.n_ndxs and self.ndxs[i] == self.n_items - 1:
+            i += 1
+        if i < self.n_ndxs:
+            self.ndxs[i] += 1
+            for j in range(i,-1,-1):
+                self.ndxs[j] = self.ndxs[i]
         else:
             self.done = True
             
-            
-        return answer
+        return reversed(answer)
 
         
-                            
-
-                
-                
-            
-            
-        if self.digits[end_ndx] > 9:
-            self.done = True
-            
-
-        return answer
-    
 def main():
 
     max_len = int(sys.argv[1])
+    max_value = int(sys.argv[2])
 
-    s = set_generator(max_len)
+    items = [i for i in range(0,max_value + 1)]
+    s = set_generator(max_len,items=items)
 
+    n = 0
     for t in s:
-        print(utils.seq_string(t))
+        n += 1
+        combo = [i for i in t if i != 0]
+        print(utils.seq_string(combo))
 
+    print("\n%d combos"%(n))
 
 if __name__ == "__main__":
     main()
