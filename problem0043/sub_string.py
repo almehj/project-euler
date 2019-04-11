@@ -39,6 +39,11 @@ def compute_possibles():
     return answer
 
 
+def do_dfs(k,compat_table):
+
+    factors = [17,13,11,7,5,3,2]
+    
+
 
 def main():
 
@@ -50,16 +55,11 @@ def main():
         k = s[:2]
         if k not in poss_keys:
             poss_keys.append((s,k))
-    print("%d possible keys..."%(len(poss_keys)))
-    useful_keys = []
-    for s,k in poss_keys:
-        if k in compat_table[13]:
-            print("  %s has: %s"%(k,seq_string(compat_table[13][k])))
-            useful_keys.append((s,k))
-    print("%d useful keys"%(len(useful_keys)))
-                  
-    for s,k in useful_keys:
-        print(s,k)
+
+
+    for k in segs[17]:
+        print("Considering %s"%(k))
+        
     
 if __name__ == "__main__":
     main()
