@@ -3,8 +3,10 @@
 import logging
 import itertools
 import operator
+import sys
 
 import combinatorics
+from utils import seq_string
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -155,7 +157,7 @@ class sudoku_puzzle(object):
             logging.debug("   Computing zeros for column %d"%(i))
             self.col_zeros[i] = self.find_area_zeros(get_col_iterator((0,i)))
             box_i,box_j = compute_box_grid_upper_left(i)
-            logging.debug("   Computing zeros for box starting at %d,%d)"%
+            logging.debug("   Computing zeros for box starting at (%d,%d)"%
                           (box_i,box_j))
             self.box_zeros[i] = self.find_area_zeros(get_box_iterator((box_i,box_j)))
 
@@ -234,15 +236,15 @@ class sudoku_puzzle(object):
     
     def set_value(self,ndx,n,**kwargs):
 
-        if n not in self.possibles[ndx]:
-            logging.severe(" %d not in set of possibles for %d,%d, ignoring"%(n,i,j))
-            raise RuntimeError("Attempt to set impossible value in cell")
-
         i,j = ndx
 
+        if n not in self.possibles[ndx]:
+            logging.warn(" %d not in set of possibles for %d,%d, death!!!!"%(n,i,j))
+            return False
+        
         if self.grid[i][j] != 0:
-            logging.severe(" %d,%d already set to %d"%(i,j,self.grid[i][j]))
-            raise RuntimeError("Attempt to set already-set cell")
+            logging.warn(" %d,%d already set to %d"%(i,j,self.grid[i][j]))
+            return False
         else:
             self.grid[i][j] = n
 
@@ -256,10 +258,16 @@ class sudoku_puzzle(object):
         self.possibles[ndx] = []
         for area_iter_gen in [get_row_iterator,get_col_iterator,get_box_iterator]:
             area_iter = area_iter_gen((i,j))
-            for ndx in area_iter:
-                if n in self.possibles[ndx]:
-                    self.possibles[ndx].remove(n)                    
+            for poss_ndx in area_iter:
+                if n in self.possibles[poss_ndx]:
+                    self.possibles[poss_ndx].remove(n)
+                if not self.is_possible():
+                    logging.warn("  Setting cell %d,%d to %d eliminates last possible for cell %d,%d"%\
+                                 (poss_ndx[0],poss_ndx[1],n,i,j))
 
+        # OK
+        return True
+                    
     def get_value(self,ndx):
         i,j = ndx
         return self.grid[i][j]
@@ -281,10 +289,9 @@ class sudoku_puzzle(object):
     def get_cells_by_n_possible(self,n):
         answer = []
         for ndx in itertools.product(range(_ROW_LEN),range(_ROW_LEN)):
-            if self.grid[ndx[0]][ndx[1]] != 0:
-                continue
-            if len(self.possibles[ndx]) == n:
-                answer += [ndx]
+            if self.grid[ndx[0]][ndx[1]] == 0:
+                if len(self.possibles[ndx]) == n:
+                    answer += [ndx]
         return answer
 
     def get_unset_cells(self):
@@ -321,17 +328,24 @@ class sudoku_puzzle(object):
             logging.debug(" I give up")
         
     def try_logic_solution(self):
-        logging.debug(" Applying pure logical solition methods")
+        logging.debug(" Applying pure logical solution methods")
+
         n = 0
         last_n = 1
-        while n+last_n > 0:
+        while n+last_n > 0 and self.is_possible():
             last_n = n
             n = 0
-            n += self.do_unique_possible_analysis()
-            n += self.do_singleton_analysis()
-            n += self.do_cluster_analysis()
+            for solver in [self.do_unique_possible_analysis,
+                           self.do_singleton_analysis,
+                           self.do_cluster_analysis,
+                           self.do_unique_cross_analysis]:
+                curr_n = solver()
+                if self.is_possible():
+                    n += curr_n
+                else:
+                    logging.warn("  Last operation rendered puzzle unsolvable.")
+                    return
             n += len(self.get_cells_by_n_possible(1))
-
         return
 
     def do_singleton_analysis(self):
@@ -356,36 +370,50 @@ class sudoku_puzzle(object):
         
         singletons = [ndx for ndx in self.possibles if len(self.possibles[ndx]) == 1]
         logging.debug("    %d cells with singleton possible list"%(len(singletons)))
+        n_set = 0
         if len(singletons) > 0:
             logging.debug("    Singleton cells: %s"%
                           (" ".join([str(ndx) for ndx in singletons])))
             for ndx in singletons:
+                if len(self.possibles[ndx]) == 0:
+                    logging.warn(" No possibles for cell %d,%d"%ndx)
+                    break
+                
                 i,j = ndx
                 n = self.possibles[ndx][0]
                 logging.debug("     Setting %d,%d to %d"%(i,j,n))
 
-                self.set_value(ndx,self.possibles[ndx][0])
-
-            logging.debug("     Set %d values"%(len(singletons)))
+                if not self.set_value(ndx,self.possibles[ndx][0]):
+                    if not self.is_possible():
+                        logging.warn("Puzzle is in unsolvable state")
+                    else:
+                        logging.warn("Could not set singleton value %d in cell %d,%d"%\
+                                     (self.possibles[ndx][0],i,j))
+                    break
+                else:
+                    n_set += 1
+                    
+            logging.debug("     Set %d values"%(n_set))
             
         # Tell caller how many, if any, cells we updated        
-        return len(singletons)
+        return n_set
 
 
     def do_unique_possible_analysis(self):
 
         logging.debug(" Unique possible analysis")
 
-        n_replaced = 0
+        n_set = 0
 
         n = self.do_unique_possible_pass()
         while n > 0:
             logging.debug("    Pass replaced %d"%(n))
-            n_replaced += n
+            n_set += n
             n = self.do_unique_possible_pass()
 
-        logging.debug(" Unique possible analysis found %d new cell values"%(n_replaced))
-        return n_replaced
+        logging.debug(" Unique possible analysis found %d new cell values"%(n_set))
+        
+        return n_set
     
     def do_unique_possible_pass(self):
 
@@ -399,6 +427,8 @@ class sudoku_puzzle(object):
                     get_box_iterator(compute_box_grid_upper_left(n))
             ]:
                 n_replaced += self.do_area_unique_possible_area_pass(area_iter)
+                if not self.is_possible():
+                    return n_replaced
 
         return n_replaced
     
@@ -414,9 +444,18 @@ class sudoku_puzzle(object):
                     cells_with_possible[n] += [ndx]
 
         for n in cells_with_possible:
-            if len(cells_with_possible[n]) == 1:
-                self.set_value(cells_with_possible[n][0],n)
-                n_replaced += 1
+            if not self.is_possible():
+                logging.warn("Previous value eliminated last possible value for cell %d,%d"%ndx)
+                break
+
+            if len(cells_with_possible[n]) == 1:                
+                ndx = cells_with_possible[n][0]
+                
+                if self.set_value(ndx,n):
+                    n_replaced += 1
+                else:
+                    logging.warn(" Puzzle is in unsolvable state")
+                    break
 
         return n_replaced
         
@@ -481,9 +520,42 @@ class sudoku_puzzle(object):
 
                         
         return n_replaced
+
+
+
+    def do_unique_cross_analysis(self):
+        logging.debug(" Applying unique cross solution techniques")
+
+        n_eliminated = 0
         
+        for row_ndx in range(_ROW_LEN):
+            uniques = [[] for i in range(_BOX_DIM)]
+            for test_val in range(1,_ROW_LEN+1):
+                sec_with_val = []
+                for sec_ndx in range(_BOX_DIM):
+                    col_ndxs = [i for i in range(_BOX_DIM*sec_ndx,_BOX_DIM*(sec_ndx+1))]
+                    for col_ndx in col_ndxs:
+                        ndx = (row_ndx,col_ndx)
+                        if test_val in self.possibles[ndx]:
+                            sec_with_val += [sec_ndx]
+                            break
+                if len(sec_with_val) == 1:
+                    logging.debug("    Found value %d is unique in row %d, section %d"%\
+                                  (test_val,row_ndx,sec_with_val[0]))
+                    base_ndx = (row_ndx,_BOX_DIM*sec_with_val[0])
+                    area_iter = get_box_iterator(base_ndx)
+                    for ndx in area_iter:
+                        if ndx[0] == row_ndx or self.grid[ndx[0]][ndx[1]] != 0:
+                            continue
+                        if test_val in self.possibles[ndx]:
+                            self.possibles[ndx].remove(test_val)
+                            n_eliminated += 1
+
+        logging.debug(" Unique cross eliminated %d possibles"%(n_eliminated))
+        return n_eliminated
 
     def try_speculative_solution(self):
+        return
         logging.debug(" Applying speculative solution techniques (guess and check)")
 
         S = speculator(self)
