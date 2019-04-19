@@ -526,6 +526,9 @@ class sudoku_puzzle(object):
     def do_unique_cross_analysis(self):
         logging.debug(" Applying unique cross solution techniques")
 
+        return self.do_unique_cross_analysis_pass()
+        
+    def do_unique_cross_analysis_pass(self)
         n_eliminated = 0
         
         for row_ndx in range(_ROW_LEN):
