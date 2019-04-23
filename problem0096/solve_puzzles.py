@@ -31,6 +31,7 @@ def main():
         puzzles = read_puzzles(infile)
 
         n_solved = 0
+        total = 0
         for index in puzzles:
             grid = puzzles[index]
 
@@ -67,6 +68,7 @@ def main():
                 
             print("\n")
         print("\nSolved %d of %d"%(n_solved,len(puzzles)))
+        print("Total of upper left corners of all solved puzzles is %d"%(total))
         
 if __name__ == "__main__":
     main()

@@ -58,7 +58,7 @@ def get_box_iterator(base_ndx):
     i = _BOX_DIM*(i//_BOX_DIM)
     j = _BOX_DIM*(j//_BOX_DIM)
     return area_iterator((i,j),_box_ndx_set)
-    
+
 def invert_known_vector(v):
     answer = []
     for n in range(1,_ROW_LEN+1):
@@ -526,9 +526,57 @@ class sudoku_puzzle(object):
     def do_unique_cross_analysis(self):
         logging.debug(" Applying unique cross solution techniques")
 
-        return self.do_unique_cross_analysis_pass()
+        n_eliminated = 0
+
+        n = 1
+        curr_n = 0
+        while n + curr_n > 0:
+            n_eliminated += curr_n
+            n = curr_n
+            curr_n = 0
+            for i in range(_ROW_LEN):
+                curr_n += self.do_unique_cross_analysis_pass(get_row_iterator((i,0)))
+                curr_n += self.do_unique_cross_analysis_pass(get_col_iterator((0,i)))
+
+        logging.debug(" Unique cross pass eliminated %d possibles"%(n_eliminated))            
+        return n_eliminated
+                                                             
+                                                            
+    def do_unique_cross_analysis_pass(self,it):
+
+        n_eliminated = 0
+
+        possible_secs = {}
+        sec_cells = [[] for i in range(_BOX_DIM)]
         
-    def do_unique_cross_analysis_pass(self)
+        for i,ndx in enumerate(it):
+            sec_ndx = i//_BOX_DIM
+            sec_cells[sec_ndx].append(ndx)
+            for val in self.possibles[ndx]:
+                if val not in possible_secs:
+                    possible_secs[val] = []
+                if sec_ndx not in possible_secs[val]:
+                    possible_secs[val].append(sec_ndx)
+
+        for val in possible_secs:
+            if len(possible_secs[val]) == 1:
+                sec_ndx = possible_secs[val][0]
+                logging.debug("  Value %d uniqe to section in box containing %s"% \
+                              (val,str(sec_cells[sec_ndx])))
+
+                for ndx in get_box_iterator(sec_cells[sec_ndx][0]):
+                    if not ndx in sec_cells[sec_ndx]:
+                        if val in self.possibles[ndx]:
+                            self.possibles[ndx].remove(val)
+                            n_eliminated += 1
+
+                            logging.debug("    Removed possible %d from %s leaving %s"%\
+                                          (val,str(ndx),str(self.possibles[ndx])))
+                            
+
+        return n_eliminated
+    
+    def old_do_cluster_analysis_pass(self):
         n_eliminated = 0
         
         for row_ndx in range(_ROW_LEN):
@@ -556,7 +604,7 @@ class sudoku_puzzle(object):
 
         logging.debug(" Unique cross eliminated %d possibles"%(n_eliminated))
         return n_eliminated
-
+    
     def try_speculative_solution(self):
         return
         logging.debug(" Applying speculative solution techniques (guess and check)")
