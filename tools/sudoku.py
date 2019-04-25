@@ -247,7 +247,9 @@ class sudoku_puzzle(object):
             return False
         else:
             self.grid[i][j] = n
-
+            logging.debug("  **** Setting %d,%d to %d. Updating possibles..."% \
+                          (i,j,n))
+                          
         # Update zero info
         box_i = compute_box_ndx(i,j)
         for l in [self.row_zeros[i], self.col_zeros[j], self.box_zeros[box_i]]:
@@ -338,7 +340,9 @@ class sudoku_puzzle(object):
             for solver in [self.do_unique_possible_analysis,
                            self.do_singleton_analysis,
                            self.do_cluster_analysis,
-                           self.do_unique_cross_analysis]:
+                           self.do_unique_cross_analysis,
+                           self.do_hidden_sets
+            ]:
                 curr_n = solver()
                 if self.is_possible():
                     n += curr_n
@@ -348,6 +352,23 @@ class sudoku_puzzle(object):
             n += len(self.get_cells_by_n_possible(1))
         return
 
+    def do_hidden_sets(self):
+
+        logging.debug(" Hidden Set analysis")
+        n_eliminated = 0
+
+        for i in range(_ROW_LEN):
+            row_iter = get_row_iterator((i,0))
+            
+
+        return n_eliminated
+
+        
+    def do_hidden_sets_pass(self):
+        return 0
+
+
+        
     def do_singleton_analysis(self):
 
         logging.debug(" Singleton analysis")
