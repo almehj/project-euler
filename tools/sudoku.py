@@ -28,7 +28,9 @@ for i in range(_ROW_LEN):
 
 class area_iterator:
 
-    def __init__(self,base_ndx,ndx_set):
+    def __init__(self,base_ndx,ndx_set,**kwargs):
+        self.name = kwargs.get("name",None)
+        
         self.next_i = 0
         self.ndx_set = []
         for ndx in ndx_set:
@@ -47,17 +49,17 @@ class area_iterator:
 
 def get_row_iterator(base_ndx):
     i,j = base_ndx
-    return area_iterator((i,0),_row_ndx_set)
+    return area_iterator((i,0),_row_ndx_set,name="row")
 
 def get_col_iterator(base_ndx):
     i,j = base_ndx
-    return area_iterator((0,j),_col_ndx_set)
+    return area_iterator((0,j),_col_ndx_set,name="col")
 
 def get_box_iterator(base_ndx):
     i,j = base_ndx
     i = _BOX_DIM*(i//_BOX_DIM)
     j = _BOX_DIM*(j//_BOX_DIM)
-    return area_iterator((i,j),_box_ndx_set)
+    return area_iterator((i,j),_box_ndx_set,name="box")
 
 def invert_known_vector(v):
     answer = []
@@ -341,7 +343,8 @@ class sudoku_puzzle(object):
                            self.do_singleton_analysis,
                            self.do_cluster_analysis,
                            self.do_unique_cross_analysis,
-                           self.do_hidden_sets
+                           self.do_hidden_sets,
+                           self.do_xwing
             ]:
                 curr_n = solver()
                 if self.is_possible():
@@ -352,20 +355,138 @@ class sudoku_puzzle(object):
             n += len(self.get_cells_by_n_possible(1))
         return
 
-    def do_hidden_sets(self):
+    def do_xwing(self):
 
-        logging.debug(" Hidden Set analysis")
+        logging.debug(" X-Wing analysis")
         n_eliminated = 0
+    
+        n = 1
+        while n > 0:
+            n = 0
 
-        for i in range(_ROW_LEN):
-            row_iter = get_row_iterator((i,0))
-            
+            n += self.do_xwing_pass(get_row_iterator, get_col_iterator)
+            n += self.do_xwing_pass(get_col_iterator, get_row_iterator)
+
+            n_eliminated += n
+        
+        logging.debug(" X-Wing analysis eliminated %d possibles"%(n_eliminated))
 
         return n_eliminated
 
+    def do_xwing_pass(self,area_iter_gen,scan_iter_gen):
+        n_eliminated = 0
+
+        pair_dict = {}
+        name = area_iter_gen((0,0)).name
         
-    def do_hidden_sets_pass(self):
-        return 0
+        # Find locked pairs: values that have exactly two possible locaions
+        # in the row/column
+        for i in range(_ROW_LEN):
+            it_dict = {}
+            it = area_iter_gen((i,i))
+            for ndx in it:
+                for p in self.possibles[ndx]:
+                    if p not in it_dict:
+                        it_dict[p] = []
+                    it_dict[p].append(ndx)
+
+            for val in it_dict:
+                if len(it_dict[val]) == 2:
+                    if val not in pair_dict:
+                        pair_dict[val] = []
+                    pair_dict[val].append((tuple(it_dict[val]),i))
+                    
+        for val in pair_dict:
+            val_dict = {}
+            for ndxs,i in pair_dict[val]:
+                i_pair = (ndxs[0][0],ndxs[1][0])
+                if ndxs[0][0] == i:
+                    i_pair = (ndxs[0][1],ndxs[1][1])
+                logging.debug("   Locked pair of %d in %s %d: %s: index pair is %s"%\
+                              (val,name,i,seq_string(ndxs),seq_string(i_pair)))
+                if i_pair not in val_dict:
+                    val_dict[i_pair] = []
+                val_dict[i_pair].append((i,ndxs))
+                
+            for i_pair in val_dict:
+                if len(val_dict[i_pair]) == 2:
+                    logging.debug("    Found X-Wing of %d: %s in %s %d and %d"%\
+                                  (val,str(i_pair),
+                                   name,val_dict[i_pair][0][0],val_dict[i_pair][1][0]))
+
+                    useful = False
+                    ndx_set = []
+                    for i,ndxs in val_dict[i_pair]:
+                        ndx_set.append(ndxs[0])
+                        ndx_set.append(ndxs[1])
+
+                    for base_ndx in ndx_set[:2]:
+                        it = scan_iter_gen(base_ndx)
+                        logging.debug("      Scanning %s with base index %s"%(it.name,str(base_ndx)))
+                        for ndx in it:
+                            if ndx not in ndx_set:
+                                if val in self.possibles[ndx]:
+                                    logging.debug("      X-Wing removing possible %d from cell %d,%d"% \
+                                                  (val,ndx[0],ndx[1]))
+                                    self.possibles[ndx].remove(val)
+                                    useful = True
+                                    n_eliminated += 1
+                    if useful:
+                        logging.debug("     X-Wing was useful")
+
+        return n_eliminated
+    
+    
+    def do_hidden_sets(self):
+    
+        logging.debug(" Hidden Set analysis")
+        n_eliminated = 0
+
+        n = 1
+        while n > 0:
+            n = 0
+            for i in range(_ROW_LEN):
+                n += self.do_hidden_sets_pass(get_row_iterator((i,0)),self.row_zeros[i])
+                n += self.do_hidden_sets_pass(get_col_iterator((0,i)),self.col_zeros[i])
+                n += self.do_hidden_sets_pass(get_box_iterator(compute_box_coords(i)),self.box_zeros[i])
+            n_eliminated += n
+
+        logging.debug(" Hidden set analysis eliminated %d possibles"%(n_eliminated))
+            
+        return n_eliminated
+
+        
+    def do_hidden_sets_pass(self,area_iter,zeros):        
+
+        n_eliminated = 0
+        
+        cell_locs = {}
+        ndxs = [ndx for ndx in area_iter]
+        for val in zeros:
+            val_locs = []
+            for ndx in ndxs:
+                if val in self.possibles[ndx]:
+                    val_locs.append(ndx)
+            val_key = tuple(sorted(val_locs))
+            if val_key not in cell_locs:
+                cell_locs[val_key] = []
+            cell_locs[val_key].append(val)
+
+        for val_key in cell_locs:
+            if len(val_key) == len(cell_locs[val_key]):
+                logging.debug("   Found a hidden set: cells %s have only occurs of %s"%\
+                              (seq_string(val_key),seq_string(cell_locs[val_key])))
+                # Remove possibles not in the set
+                for ndx in val_key:
+                    for p in self.possibles[ndx]:
+                        if p not in cell_locs[val_key]:
+                            self.possibles[ndx].remove(p)
+                            logging.debug("    Hidden set eliminated possible %d from cell %d,%d"%\
+                                          (p,ndx[0],ndx[1]))
+                            n_eliminated += 1
+                            
+        return n_eliminated        
+        
 
 
         
@@ -582,7 +703,7 @@ class sudoku_puzzle(object):
         for val in possible_secs:
             if len(possible_secs[val]) == 1:
                 sec_ndx = possible_secs[val][0]
-                logging.debug("  Value %d uniqe to section in box containing %s"% \
+                logging.debug("  Value %d unique to section in box containing %s"% \
                               (val,str(sec_cells[sec_ndx])))
 
                 for ndx in get_box_iterator(sec_cells[sec_ndx][0]):
@@ -591,7 +712,7 @@ class sudoku_puzzle(object):
                             self.possibles[ndx].remove(val)
                             n_eliminated += 1
 
-                            logging.debug("    Removed possible %d from %s leaving %s"%\
+                            logging.debug("    Unique cross eliminated possible %d from %s leaving %s"%\
                                           (val,str(ndx),str(self.possibles[ndx])))
                             
 

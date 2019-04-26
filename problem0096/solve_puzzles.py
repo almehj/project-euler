@@ -47,7 +47,9 @@ def main():
                 print("%3d: Not Solved. End State:"%(index))
             print("%s"%(grid))
                 
-            if not grid.is_solved():
+            if grid.is_solved():
+                total += 100*grid.grid[0][0] + 10*grid.grid[0][1] + grid.grid[0][2]
+            else:
                 if grid.is_possible():
                     print(" Solution still possible")
                 else:
