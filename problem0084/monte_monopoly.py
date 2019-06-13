@@ -202,6 +202,8 @@ def run_trials(n_trials,n_sides):
         else:
             d_ndx = sum(roll)
             curr_ndx = advance(curr_ndx,d_ndx)
+            if curr_ndx == jail_ndx:
+                n_doubles = 0
 
         occurs[curr_ndx] += 1
         logging.debug(" Finally landed on %s (%s occurs so far)"%
