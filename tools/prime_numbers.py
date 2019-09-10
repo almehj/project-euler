@@ -185,5 +185,6 @@ def main():
         f_list = factorization(n)
         print("%d: %s"%(n," * ".join(["%s^%s"%t for t in f_list])))
         print("%d: %s"%(n," ".join([str(d) for d in divisors(n)])))
+        
 if __name__ == "__main__":
     main()
