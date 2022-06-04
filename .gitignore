@@ -1,9 +1,15 @@
 # Hank junk files
 foo
 goo
+bar
+baz
+
+# Executables
+*.exe
 
 # Emacs backup files
 *~
+#*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
