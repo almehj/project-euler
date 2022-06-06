@@ -7,9 +7,9 @@ coins = prime_numbers.primes_less_than(total+1)
 
 print("coins =",coins)
 
-table = [[1 for j in range(total+1)] for i in range(len(coins))]
+table = [[0 for j in range(total+1)] for i in range(len(coins))]
 for i in range(len(table[0])):
-    if total%coins[0] != 0:
+    if i%coins[0] != 0:
         table[0][i] = 0
     else:
         table[0][i] = 1
@@ -23,8 +23,8 @@ for i in range(1,len(coins)):
         table[i][j] = answer
 
 if total < 50:
-    for row in table:
-        print(" ".join(["%4d"%n for n in row]))
+    for i,row in enumerate(table):
+        print(" ".join(["%6d:"%(coins[i])] + ["%4d"%n for n in row]))
         
 
 for j in range(total+1):

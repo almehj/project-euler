@@ -35,17 +35,16 @@ print(len(unique))
 
 unique.sort()
 
-final = []
+final = {}
 na = 0
 for a in unique:
     na += 1
-    if na%50 == 0:
-        print('beep')
+    print('beep',na,'/',len(unique))
+
     for b in squares:
         n = a+b
         if n < max_n:
-            if n not in final:
-                final.append(n)
+            final[n] = 1
         else:
             break
 

@@ -42,7 +42,7 @@ for x1 in range(n_max):
                     for i,j in [(0,1),(0,2),(1,2)]:
                         if dot(sides[i],sides[j]) == 0:
                             right_count += 1
-                            print('Found',coords)
+                            #print('Found',coords)
 
 print(tot_count," total coordinate sets")
 print(right_count//2,"unique right triangles")
