@@ -22,7 +22,12 @@ def read_existing_primes():
     return answer
 
 existing_primes = read_existing_primes()
-
+hash_existing = {}
+max_existing = -1
+for n in existing_primes:
+    hash_existing[n] = 1
+    if n > max_existing:
+        max_existing = n
 
 
 def compute_max_factor(n):
@@ -38,6 +43,7 @@ def dump_existing_primes():
             
 def is_prime_brute_force(n):
 
+    print("Brute forcing",n)
     #logging.debug("Brute forcing %d"%(n))
     max_factor = compute_max_factor(n)
     #logging.debug("Max factor is %d"%(max_factor))
@@ -67,7 +73,9 @@ def extend_primes(n_max):
     while existing_primes[-1] < n_max:
         n = find_next_prime(existing_primes[-1] + 1)
         existing_primes += [n]
-    
+        hash_existing[n] = 1
+
+    max_existing = existing_primes[-1]
         
 def is_prime_use_existing(n):
 
@@ -77,7 +85,7 @@ def is_prime_use_existing(n):
     max_factor = compute_max_factor(n)
     logging.debug("Max factor is %d"%(max_factor))
 
-    if n in existing_primes:
+    if n in hash_existing:
         logging.debug("%d is in existing prime list"%(n))
         return True
 
@@ -114,9 +122,11 @@ def is_prime(n):
         return False
 
     
-    if n < existing_primes[-1]:
-        return (n in existing_primes)
-            
+    #    if n < existing_primes[-1]:
+    #         return (n in existing_primes)
+    if n in hash_existing:
+        return True
+    
     return is_prime_use_existing(n)
 
 
@@ -182,9 +192,6 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     for n in [int(s.strip()) for s in sys.argv[1:]]:
-        f_list = factorization(n)
-        print("%d: %s"%(n," * ".join(["%s^%s"%t for t in f_list])))
-        print("%d: %s"%(n," ".join([str(d) for d in divisors(n)])))
-        
+        print(n,is_prime(n))
 if __name__ == "__main__":
     main()
