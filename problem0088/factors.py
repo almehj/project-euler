@@ -39,20 +39,13 @@ def sum_posibles(fn):
             fn.remove(a)
             fn.remove(b)
             
-for k in range(2,max_n+1):
-    for n in range(k,max_n+1):
-        fn = nums[n]
-        lfn = len(fn)
-
-        if lfn <= 1:
-            continue
+for n in range(k,max_n+1):
+    fn = nums[n]
+    lfn = len(fn)
+    
+    if lfn <= 1:
+        continue
         
-        sfn = sum(fn)
-        if lfn == k and sfn == n:
-            print("smallest",k,":",n,fn)
-            break
-
-        # how many ones to get sum to work?
-        n_ones = n - sfn
-        print("sum",n,"needs",n_ones,"for length",lfn+n_ones,"k=",k)
+    sfn = sum(fn)
+    print(n,sfn,n-sfn,fn)
             
