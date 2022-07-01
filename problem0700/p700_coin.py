@@ -6,36 +6,28 @@ import sys
 a = 1504170715041707
 m = 4503599627370517
 
-def euler_val(n):
-    answer = n
-    answer *= a
-    answer %= m
+n_a = int(m/a) + 1
+dn = (a*n_a)%m
 
-    return answer
-
-
-n_laps = m // a
-n_a = n_laps + 1
-m_inc = n_a * a
-dn = m_inc % m
 coins = [a]
-n = a
+n = dn
 while True:
     if n < coins[-1]:
-        print(n,"<",coins[-1],coins[-1]-n)
+        print("found",n,"<",coins[-1])
         delta = coins[-1] - n
         coins.append(n)
+
         while n > delta:
             n -= delta
-            print(n, "<", coins[-1], coins[-1] - n)
+            print("found",n,"<",coins[-1])
             coins.append(n)
 
-    if n <= 1:
-        break
+        dist = a - n
+        n_inc = int(dist/dn) + 1
+        dn = (n_inc*dn)%a
 
-    n = (n+dn)%a
+    n += dn
+    n %= a
 
 
 
-
-print("\nSum is",sum(coins))
