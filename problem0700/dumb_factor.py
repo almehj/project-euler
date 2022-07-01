@@ -8,7 +8,7 @@ from math import sqrt
 n = int(sys.argv[1])
 f_max = sqrt(n) + 1
 factors = []
-with open("primes.txt") as infile:
+with open("../data/existing_primes.txt") as infile:
     f = 0
     for line in infile:
         f = int(line)
