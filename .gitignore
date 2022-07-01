@@ -4,6 +4,10 @@ goo
 bar
 baz
 
+# PyCharm stuff
+.idea/
+venv/
+
 # Executables
 *.exe
 
