@@ -4,6 +4,10 @@ goo
 bar
 baz
 
+# TeX and LaTeX intermediate files
+*.aux
+*.dvi
+
 # Executables
 *.exe
 
