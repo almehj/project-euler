@@ -7,6 +7,11 @@ baz
 # TeX and LaTeX intermediate files
 *.aux
 *.dvi
+# PyCharm stuff
+
+
+.idea/
+venv/
 
 # Executables
 *.exe
