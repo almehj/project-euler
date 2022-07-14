@@ -86,19 +86,15 @@ Section 1-1}
   1^2 + 2^2 + 3^2 + \ldots + n^2 = \frac{n(n+1)(2n+1)}{6}
   \]
 
-  \sol{Induction on $n$. For $n =1$, we have $1^2 = \frac{1(2)(3)}{6} = 1$. Assume then the proposition is true for $n \le k$:
-    \[
-1^2 + 2^2 + 3^2 + \ldots + k^2 = \frac{k(k+1)(2k+1)}{6}
-\]
-Adding $(k+1)^2$:
+  \sol{Induction on $n$. For $n =1$, we have $1^2 = \frac{1(2)(3)}{6} = 1$. Assume then the proposition is true for $n \le k$. Adding $(k+1)^2$ to the right hand side of the proposition:
 \begin{align*}
-  &=&\frac{k(k+1)(2k+1)}{6} + (k+1)^2 \\
-  &=&\frac{(k+1)}{6} [ k(2k+1) + 6(k+1) ] \\
-  &=&\frac{(k+1)}{6} [ 2k^2+k + 6k+6 ]\\
-  &=&\frac{(k+1)}{6} [ 2k^2+7k +6 ]\\
-  &=&\frac{(k+1)}{6} [ (k+2)(2k+3) ]\\
-  &=&\frac{(k+1)}{6} [ (k+2)(2(k+1)+1) ]\\
-  &=&\frac{(k+1)(k+2)(2(k+1)+1)}{6}  
+   &\frac{k(k+1)(2k+1)}{6} + (k+1)^2 \\
+  =\ &\frac{(k+1)}{6} [ k(2k+1) + 6(k+1) ] \\
+  =\ &\frac{(k+1)}{6} [ 2k^2+k + 6k+6 ]\\
+  =\ &\frac{(k+1)}{6} [ 2k^2+7k +6 ]\\
+  =\ &\frac{(k+1)}{6} [ (k+2)(2k+3) ]\\
+  =\ &\frac{(k+1)}{6} [ (k+2)(2(k+1)+1) ]\\
+  =\ &\frac{(k+1)(k+2)(2(k+1)+1)}{6}  
 \end{align*}
 the result we seek.
 }
@@ -110,15 +106,15 @@ the result we seek.
     [Hint: Use Theorem 1-1]
 
     \sol{Base case $n=1$ gives $1^3 = 1^2$. Assume true for $n \le
-      k$. Now add $(k+1)^3$ to both sides
+      k$. Now add $(k+1)^3$ to the right hand side:
       \begin{align*}
-        &=& (1+2+3+\ldots+k)^2 + (k+1)^3 \\
-        &=& \left (\frac{k(k+1)}{2} \right)^2 + (k+1)^3  \\
-        &=& \frac{(k+1)^2}{4} [k^2 + 4(k+1)] \\
-        &=& \frac{(k+1)^2}{4} (k^2 + 4k+4) \\
-        &=& \frac{(k+1)^2}{4} (k+2)^2 \\
-        &=& \left (\frac{(k+1)(k+2)}{2} \right)^2 \\
-        &=& (1+2+3+\ldots+k+(k+1))^2 
+         & (1+2+3+\ldots+k)^2 + (k+1)^3 \\
+        =\ & \left (\frac{k(k+1)}{2} \right)^2 + (k+1)^3  \\
+        =\ & \frac{(k+1)^2}{4} [k^2 + 4(k+1)] \\
+        =\ & \frac{(k+1)^2}{4} (k^2 + 4k+4) \\
+        =\ & \frac{(k+1)^2}{4} (k+2)^2 \\
+        =\ & \left (\frac{(k+1)(k+2)}{2} \right)^2 \\
+        =\ & (1+2+3+\ldots+k+(k+1))^2 
       \end{align*}
       The result we seek.}
 
@@ -133,15 +129,15 @@ the result we seek.
       
       Then, we can obeserve that for $n+1$
       \begin{align*}
-        x^{n+1} - y^{n+1} &=& x^{n+1} - x^ny + x^ny - y^{n+1} \\
-        &=& x^n(x-y) + y(x^n-y^n)
+        x^{n+1} - y^{n+1} =\ & x^{n+1} - x^ny + x^ny - y^{n+1} \\
+        =\ & x^n(x-y) + y(x^n-y^n)
       \end{align*}
       So we can then assume that the proposition is true for $n \le k$, and compute $x^{k+1}-y^{k+1}$ using the result for $x^k-y^k$
       \begin{align*}
-        x^{k+1} - y^{k+1} &=& x^k(x-y) + y(x^k-y^k) \\
-        &=& x^k(x-y) + y(x-y)(x^{k-1}+x^{k-2}y +\ldots+xy^{k-1} + y^{k-1}) \\
-        &=& (x-1) [x^k + y(x^{k-1}+x^{k-2}y +\ldots+xy^{k-2} + y^{k-1})] \\
-        &=& (x-1) (x^k + x^{k-1}y+x^{k-2}y^2 +\ldots+xy^{k-1} + y^{k}) 
+       x^{k+1} - y^{k+1} =\ & x^k(x-y) + y(x^k-y^k) \\
+        =\ & x^k(x-y) + y(x-y)(x^{k-1}+x^{k-2}y +\ldots+xy^{k-1} + y^{k-1}) \\
+        =\ & (x-y) [x^k + y(x^{k-1}+x^{k-2}y +\ldots+xy^{k-2} + y^{k-1})] \\
+        =\ & (x-y) (x^k + x^{k-1}y+x^{k-2}y^2 +\ldots+xy^{k-1} + y^{k}) 
       \end{align*}
       The result we seek.
     }
@@ -152,9 +148,9 @@ the result we seek.
     \]
     \sol{Base case $n=1$ is $1\cdot2 = \frac{1(2)(3)}{6} = 2$. Assume true for $n \le k$. Adding the next term $(n+1)(n+2)$ to both sides gives
       \begin{align*}
-        \frac{n(n+1)(n+2)}{3} + (n+1)(n+2) &=& (n+1)(n+2)\left(\frac{n}{3} + 1\right) \\
-        &=& (n+1)(n+2) \left(\frac{1}{3} (n+3)\right) \\
-        &=& \frac{(n+1)(n+2)(n+3)}{3}
+        & \frac{n(n+1)(n+2)}{3} + (n+1)(n+2) &= (n+1)(n+2)\left(\frac{n}{3} + 1\right) \\
+        =\ & (n+1)(n+2) \left(\frac{1}{3} (n+3)\right) \\
+        =\ & \frac{(n+1)(n+2)(n+3)}{3}
       \end{align*}
       The result we seek.}
 
@@ -175,10 +171,10 @@ the result we seek.
     \]
     \sol{Base case $n=1$ gives $\frac{1}{1\cdot 2} = \frac{1}{2}$. Assume true for $n \le k$. Adding the next term $\frac{1}{(k+1)(k+2)}$ to both sides gives
         \begin{align*}
-          \frac{k}{k+1} + \frac{1}{(k+1)(k+2)} &=& \frac{1}{k+1} \left ( k + \frac{1}{k+2} \right) \\
-          &=& \frac{1}{k+1} \left ( \frac{k^2 + 2k + 1}{k+2} \right) \\
-          &=& \frac{1}{k+1} \left ( \frac{(k+ 1)^2}{k+2} \right) \\
-          &=& \frac{k+ 1}{k+2}
+          & \frac{k}{k+1} + \frac{1}{(k+1)(k+2)} &= \frac{1}{k+1} \left ( k + \frac{1}{k+2} \right) \\
+          =\ & \frac{1}{k+1} \left ( \frac{k^2 + 2k + 1}{k+2} \right) \\
+          =\ & \frac{1}{k+1} \left ( \frac{(k+ 1)^2}{k+2} \right) \\
+          =\ & \frac{k+ 1}{k+2}
         \end{align*}
         The result we seek.
     }
@@ -187,20 +183,210 @@ the result we seek.
     \[
     F_1 + F_2 + F_3 + \ldots + F_n = F_{n+2} - 1
     \]
+    \sol{Base case is $n=1$. $F_3 - 1 = 2 - 1 = 1 = F_1$. Assume proposition holds for $n\le k$. Adding $F_{n+1}$ to each side
+      \begin{align*}
+        F_{k+2} - 1 + F_{k+1} &= F_{k+1} + F_{k+2} -1 \\
+        &= F_{k+3} - 1
+      \end{align*}
+      The result we seek.
+        
+    }
 
   \item Prove that
     \[
     F_1 + F_3 + F_5 + \ldots + F_{2n-1} = F_{2n}
     \]
+    \sol{
+      Base case is $n=1$: $F_1 = 1 = F_2$. Assume proposition is true for $n \le k$. Adding the next term $F_{2(k+1)-1} = F_{2k+1}$ to the result for k gives
+      \begin{align*}
+        & F_{2k} + F_{2k+1} &= F_{2k+2} \\
+        =\ & F_{2(k+1)}
+      \end{align*}
+      The result we seek.
+    }
 
   \item Prove that
     \[
     F_2 + F_4 + F_6 + \ldots + F_{2n} = F_{2n+1} - 1
     \]
+    \sol{
+            Base case is $n=1$: $F_2 = 1 = 2 - 1 = F_3 - 1$. Assume proposition is true for $n \le k$. Adding the next term $F_{2(k+1)} = F_{2k+2}$ to the result for k gives
+      \begin{align*}
+        F_{2k+1} + F_{2k+2} - 1 &= F_{2k+3} - 1\\
+        &= F_{2(k+1)+1} - 1
+      \end{align*}
+      The result we seek.
+    }
 
   \item Prove that
     \[
     F_{n+1}^2 - F_nF_{n+2} = (-1)^n
     \]
+    \sol{ Base case is $n=1$: $F_2^2 - F_1F_3 = 1^2 - 1\cdot2 = -1 = (-1)^1$.
+      Assume proposition true for $n \le k$. Bumping the indices $k \Rightarrow k+1$ gives
+      \begin{align*}
+        & F_{k+2}^2 - F_{k+1}F_{k+3} &= F_{k+2}(F_k + F_{k+1}) - F_{k+1}(F_{k+1} + F_{k+2}) \\
+        =\ & F_kF_{k+2} + F_{k+1}F_{k+2} -F_{k+1}^2 - F_{k+1}F_{k+2} \\
+        =\ & F_kF_{k+2} - F_{k+1}^2 \\
+        =\ & -(F_{k+1}^2 - F_kF_{k+2}) \\
+        =\ & -((-1)^k) \\
+        =\ & (-1)^{k+1}
+      \end{align*}
+      the result we seek.
+    }
+
+  \item Prove that
+    \[
+    F_1F_2 + F_2F_3 + F_3F_4 + \ldots + F_{2n-1}F_{2n} = F^2_{2n}
+    \]
+    \sol{ Base case is $n=1$:$F_1F_2 = 1\cdot1 = 1 = F_2^2$. Assume
+      true for $n \le k$. Each bump in $n$ adds two new terms to the
+      sequence. Adding the next two terms $F_{2k}F_{2k+1} +
+      F_{2k+1}F_{2k+2}$ to the right hand side of the result for $n=k$
+      gives
+      \begin{align*}
+        F^2_{2k} +F_{2k}F_{2k+1} + F_{2k+1}F_{2k+2} &= F^2_{2k} +F_{2k}F_{2k+1} + F_{2k+1}( F_{2k} + F_{2k+1}) \\
+                &= F^2_{2k} + F_{2k}F_{2k+1} + F_{2k}F_{2k+1} + F_{2k+1}^2 \\
+                &= F^2_{2k} + 2F_{2k}F_{2k+1} + F_{2k+1}^2 \\
+        &= (F_{2k} + F_{2k+1})^2 \\
+        &= F_{2k+2}^2
+      \end{align*}
+    }
+    the result we seek.
+    
+  \item Prove that
+    \[
+    F_1F_2 + F_2F_3 + F_3F_4 + \ldots + F_{2n}F_{2n+1} = F^2_{2n+1}-1
+    \]
+    \sol{ Base case is $n=1$: $F_1F_2 + F_2F_3= 1\cdot1 + 1\cdot2 = 3 = 2^2 - 1 = F_3^2-1$. Assume true for $n \le k$.  Going from $k$ to $k+1$ adds two new terms $F_{2k+1}F_{2k+2}$ and $F_{2k+2}F_{2k+3}$. Looking at the right hand side of the proposition}
+    \begin{align*}
+      F^2_{2k+1} - 1 + F_{2k+1}F_{2k+2} + F_{2k+2}F_{2k+3} &= F^2_{2k+1} + F_{2k+1}F_{2k+2} + F_{2k+2}(F_{2k+1} + F_{2k+2}) - 1\\
+      &= F^2_{2k+1} + 2F_{2k+1}F_{2k+2} +  F_{2k+2}^2 - 1\\
+      &= (F_{2k+1} + F_{2k+2})^2 - 1\\
+      &= F^2_{2k+3} - 1 \\
+      &= F^2_{2(k+1)+1} - 1
+    \end{align*}
+    the result we seek.
+
+  \item \label{ex13} The Lucas numbers $L_n$ are defined by the equations $L_1=1$, and $L_n = F_{n+1} + F_{n-1}$, for each $n \ge 2$. Prove that
+    \[
+    L_n = L_{n-1} + L_{n-2} \, (n \ge 3) 
+    \]
+    \sol{
+      For the base case, consider $n=3$: using the original definition of Lucas numbers gives $L_3 = F_4 + F_2 = 3 + 1 = 4$ and the proposition gives $L_3 = L_2 + L_1 = F_3 + F_1 + L_1 = 2 + 1+1 =4$, confirming the proposition for $n=3$. Assume the proposition holds for $n \le k$, so $L_k =L_{k-1} + L_{k-2}$. Consider the right hand side of the poposition, with the indices increased by one
+      \begin{align*}
+        L_{k} + L_{k-1} &= F_{k+1} + F_{k-1} + F_{k} + F_{k-2} \\
+        &= (F_{k} + F_{k+1}) + (F_{k-2} + F_{k-1}) \\
+        &= F_{k+2} + F_k \\
+        &= L_{k+1} && \text{(by definition of Lucas numbers)}
+      \end{align*}
+      thus proving the proposition.
+      }
+
+  \item What is wrong with the following argument?
+
+    ``Assuming $L_n = F_n$ for $n=1,2,\ldots,k$, we see that
+    \begin{align*}
+      L_{k+1} &= L_k - L_{k-1} && \text{(by exercise \ref{ex13})} \\
+      &= F_K + F_{k=1} && \text{(by our assumption)} \\
+      &= F_{k+1} && \text{(by definition of $F_{k+1}$)}
+    \end{align*}
+    Hence, by the principle of mathematical induction, $F_n = L_n$ for
+    each positive integer $n$.''  \sol{ The initial assumption
+      (```Assuming $L_n = F_n$ for $n=1,2,\ldots,k$\ldots) is true for
+      $k \le 1$, as $L_1 = F_1 = 1$, but the result from exercise
+      \ref{ex13} requires $k \le 3$. If we look at $k=2$, we see $L_2
+      = F_1 + F_3 = 1+2 = 3$ using the definition of Lucas numbers,
+      while $F_2=1 \ne L_2$, and for $k=3$, $L_3 = F_4 + F_2 = 3 + 1 =
+      4$ while $F_3 = F_2 + F_1 = 1+1 =2 \ne L_3$. The principle of
+      mathematical induction does not apply here, as its preconditions
+      have not been met.  }
+    
+  \item Prove that $F_{2n} = F_nL_n$
+    \sol{      
+    Base case $n=1$: $F_1L_1 = 1\cdot1 = 1 = F_2$. Assume true for $n
+    \le k$. For the case $k+1$, the right hand of the proposition
+    becomes
+    \begin{align*}
+      F_{k+1}L_{k+1} &= (F_k + F_{k-1})(F_{k+2} + F_k) \\
+      &= F_kF_{k+2} + F_k^2 + F_{k-1}F_{k+2} + F_{k-1}F_k \\
+      &=
+    \end{align*}
+    }
+    
+  \item Prove that
+    \[
+    L_1 + 2L_2 + 4L_3 + 8L_4 + \ldots + 2^{n-1}L_n = 2^nF_{n+1}-1
+    \]
+    \sol{
+      For $n=1$, $2F_2 - 1 = 2\cdot1 - 1 = L_1$. Assume true for $n \le k$. Adding the $k+1$st term to the right hand side of the proposition gives
+      \begin{align*}
+        2^kF_{k+1} - 1 + 2^kL_{k+1} &= 2^k(F_{k+1} + F_{k+2} + F_{k}) -1 \\
+        &= 2^k(F_{k+2} +(F_k + F_{k+1}))) - 1 \\
+        &= 2^k(F_{k+2} +F_{k+2}) - 1 \\
+        &= 2^k(2F_{k+2}) - 1 \\
+        &= 2^{k+1}F_{k+2} - 1
+      \end{align*}
+      proving the proposition.
+      }
+    
+  \item Prove that $n(n^2 -1)(3n+2)$ is divisible by $24$ for each
+    positive integer $n$.
+    \sol{For $n=1$, we have $1(1^2 - 1)(3\cdot1 + 2) = 0 = 24\cdot0$.
+      Assume true for $n \le k$. For $k+1$ we have
+      \begin{align*}
+           & (k+1)((k+1)^2 - 1)(3(k+1) + 2) \\
+        =\ & (k+1)(k^2 + 2k)(3k + 5) \\
+        =\ & k(k+1)(k+2)(3k+5)         
+      \end{align*}
+      The first three factors ensure that the result is divisible by
+      $3$, leaving a factor of 8 that must also divide the result.
+      There are two cases, $k$ even and $k$ odd.
+
+      First consider even $k$: $k = 2m, m >0 $. The expression becomes
+      \begin{align*}
+          & 2m(2m+1)(2m+2)(6m+5) \\
+        =\ & 4m(2m+1)(m+1)(6m+5)
+      \end{align*}
+      which has a factor of $4$. To find another factor of two,
+      consider the parity of $m$. If $m$ is even, then $m=2i$ for some
+      $i>0$, makeing the first factor $8i$, giving us the factor we
+      need. If $m$ is odd, then the factor $(m+1)$ is even, giving the
+      last factor of $2$ in a similar manner. Thus if $k$ is even, the
+      proposition expression has factors $3$ and $8$ and is divisible
+      by 24.
+
+      Now if $k$ is odd, $k = 2m-1, m>0$, and the $k+1$ expression becomes
+      \begin{align*}
+        & (2m-1)(2m)(2m+1)(3(2m-1) + 5) \\
+        =\ & (2m-1)(2m)(2m+1)(6m+2) \\
+        =\ & 4m(2m-1)(2m+1)(3m+1)
+      \end{align*}
+      with a factor of $4$. Getting the final factor of 2 is simlar:
+      if m is even, then $4m = 4\cdot2i = 8i$ for some $i>0$, and if m
+      is odd then $m = 2i-1$ for some $i > 0$ and $(3m+1) = (3(2i-1) +
+      1) = (6i-2) = 2(3i-1)$, giving the needed factor.
+      
+      Since in both cases ($k$ even and $k$ odd) the expression for
+      $k+1$ is divisible by $24$, the proposition is proven.  }
+
+    \item Prove that if $n$ is an odd positive integer, then $x+y$ is
+      a factor of $x^n+y^n$. (For example, if $n=3$,then $x^3+y^3 =
+      (x+y)(x^2 - xy + y^2)$.)  \sol{ For $n=1$ we get the trivial
+        result $x+y$ which obviously meets requirements. Assume the
+        poposition true for $n \in \{1,3,5,...,2k-1\}$, so $x^{2k-1} +
+        y^{2k-1} = (x+y)f(x,y)$ for some $f(x,y)$. Consider the next
+        odd exponent $2k+1$ which gives $x^{2k+1} + y^{2k+1}$:
+        \begin{align*}
+          =\ & x^{2k+1} + +x^2y^{2k-1} - x^2y^{2k-1}k + y^{2k+1} \\
+          =\ & x^2(x^{2k-1} + y^{2k-1}) + y^{2k-1}(y^2 - x^2) \\
+          =\ & x^2(x+y)f(x,y) - y^2(x^2-y^2) \\
+          =\ & x^2(x+y)f(x,y) - y^2(x+y)(x-y) \\
+          =\ & (x+y)\left [ x^2f(x,y) - y^2(x-y) \right ]
+          \end{align*}
+      }
+      proving the proposition.
+    
 \end{enumerate}
 \end{document}
+ 
