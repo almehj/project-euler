@@ -1,0 +1,134 @@
+%% Thanks to Bennet Goeckner for giving me his TeX template, which
+%% this is based on.  These percent symbols tell the compiler to
+%% ignore the remainder of a given line.  We use them to write
+%% comments that will not appear in the finalized output.
+
+%% The following tells the compiler which type of document we're making.
+%% There are many options. ``Article'' is probably fine for our class.
+\documentclass[12pt]{article}
+
+%% After declaring the documentclass, we load some packages which give
+%% us some built-in commands and more functionality.  The following is
+%% a list of packages that this file might use.  If a command you're
+%% using isn't working, try Googling it -- you might need to add a
+%% specific package.  I have included the standard ones that I like to
+%% load.
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{graphicx}
+\usepackage{mdframed}
+\usepackage{multicol}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage[margin = .8in]{geometry}
+\geometry{letterpaper}
+\linespread{1.2}
+
+%% One of the nicest things about LaTeX is you can create custom
+%% macros. If there is a long-ish expression that you will write
+%% often, it is nice to give it a shorter command.  For our common
+%% number systems.
+\newcommand{\RR}{\mathbb{R}} %% The blackboard-bold R that you have seen used for real numbers is typeset by $\mathbb{R}$. This macro means that $\RR$ will yield the same result, and is much shorter to type.
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}} 
+\newcommand{\QQ}{\mathbb{Q}}
+
+%% Your macros can even accept arguments. 
+\newcommand\set[1]{\left\lbrace #1 \right\rbrace} %% In mathmode, if you write \set{STUFF}, then this will output {STUFF}, i.e. STUFF inside of a set
+\newcommand\abs[1]{\left| #1 \right|} %% This will do the same but with vertical bars. I.e., \abs{STUFF} gives |STUFF|
+\newcommand\parens[1]{\left( #1 \right)} %% Similar. \parens{STUFF} gives (STUFF)
+\newcommand\brac[1]{\left[ #1 \right]} %% Similar. \brac{STUFF} gives [STUFF]
+\newcommand\sol[1]{\begin{mdframed}
+\emph{Solution.} #1
+\end{mdframed}}
+\newcommand\solproof[1]{\begin{mdframed}
+\begin{proof} #1
+\end{proof}
+\end{mdframed}}
+%% A few more important commands:
+
+%% You should start every proof with \begin{proof} and end it with \end{proof}.  
+%%
+%% Code inside single dollar signs will give in-line mathmode. I.e., $f(x) = x^2$ 
+%% Code \[ \] will give mathmode centered on its own line.
+%%
+%% Other common commands:
+%%	\begin{align*} and \end{align*} -- Good for multiline equations
+%%	\begin{align} and \end{align} -- Same as above, but it will number the equations for easy reference
+%%	\emph{italicized text here} and \textbf{bold text here} are also useful.
+%%
+%% Some very specific mathmode commands and their meanings:
+%%	x \in A -- x is an element of A
+%%	x \notin A -- x is not an element of A
+%%	A \subseteq B -- A is a subset of B
+%%	A \subsetneq B -- A is a proper subset of B
+%%	x \equiv y \pmod{n} -- x is congruent to y mod n. 
+%%	x \geq y and x \leq y -- Greater than or equal to and less than or equal to 
+%%
+%% You'll probably find lots of relevant commands in the question prompts. Also Google is your friend!
+
+\title{Exercise Solutions for George E. Andrews' \\
+  {\em Number Theory} \\
+Section 1-2}
+
+\author{Hank Alme}
+  
+
+\begin{document}
+\maketitle
+
+\begin{enumerate}
+\item Write the numbers twenty-five, thirty-two, and fifty-six to the base five.
+
+  \sol{
+    \begin{align*}
+      25 &= 1\cdot5^2 + 0\cdot5^1 + 0\cdot5^0 = 100\ \text{base 5} \\
+      32 &= 1\cdot5^2 + 1\cdot5^1 + 2\cdot5^0 = 112\ \text{base 5} \\
+      56 &= 2\cdot5^2 + 1\cdot5^1 + 1\cdot5^0 = 211\ \text{base 5}
+    \end{align*}
+}
+
+  \item Write the numbers forty-seven, sixty-eight, and one hundred
+    twenty-seven to the base two.
+  \sol{
+    \begin{align*}
+      47 &= 0\cdot2^6 + 1\cdot2^5 +  0\cdot2^4 +  1\cdot2^3 +  1\cdot2^2 +  1\cdot2^1 +  1\cdot2^0  = 101111\ \text{base 2} \\
+      68 &= 1\cdot2^6 +  0\cdot2^5 +  0\cdot2^4 +  0\cdot2^3 +  1\cdot2^2 +  0\cdot2^1 +  1\cdot2^0  = 1000100\ \text{base 2}\\
+      127 &= 1\cdot2^6 +  1\cdot2^5 +  1\cdot2^4 +  1\cdot2^3 +  1\cdot2^2 +  1\cdot2^1 +  1\cdot2^0  = 1111111\ \text{base 2}
+      \end{align*}
+  }
+
+\item What is the least number of weights required to weigh any
+  integral number of pounds up to 63 pounds if one is only allowed to
+  put weights on one side of the balance?
+
+  \sol{ This requires a minimum of six weights: $32,16,8,4,2,$ and $1$
+    pounds. With this set, any weight up to $63$ can be expressed
+    using its binary representation, indicating which weights need to
+    be included. For example, to weigh $25$ pounds ($011001$ binary),
+    we would use the $16 (2^4), 8 (2^3),$ and $1 (2^0)$ pound weights.  }
+
+\item \label{ex4} Prove that each non-zero integer may be represented in the form
+  \[
+  n = \sum_{j=0}^s c_j3^j
+  \]
+  where $c_s \ne 0$, and each $c_j$ is equal to $-1,0,$ or $1$.
+
+\item Using Exercise \ref{ex4}, determine the least number of weights required to weigh any integral number of pounds up to 80 pounds if one is allowed to put weights in both pans of a balance.
+
+\item \label{ex6} Prove that if
+  \[
+  a_sk^s + a_{s-1}k^{s-1} + \ldots + a_0
+  \]
+  is a representation of $n$ to the base $k$, then $0 < n \le k^{s+1}
+  - 1$. [Hint: use Theorem 1-2.]
+
+  \item Without using Theorem 1-3, prove directly that two different representations to the base $k$ represent different integers. [Hint: Use Exercise \ref{ex6}.]
+\end{enumerate}
+\end{document}
+% 31 28 31 30 31 30 31 31 30 31 30 31
+% +3 +0 +3 +2 +3 +2 +3 +3 +2 +3 +2 +3
+% +3 +3 +6 +1 +4 +6 +2 +5 +0 +3 +5 +1
